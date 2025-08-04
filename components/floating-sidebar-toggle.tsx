@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { Menu } from "lucide-react"
 import { useSidebarVisibility } from "./sidebar-context"
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils/common"
 
 export function FloatingSidebarToggle() {
   const { isVisible, showSidebar } = useSidebarVisibility()
