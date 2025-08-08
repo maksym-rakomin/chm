@@ -1,6 +1,9 @@
 "use client"
 
 import { useState } from "react"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -28,12 +31,46 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Progress } from "@/components/ui/progress"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 
 export default function StaffPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [roleFilter, setRoleFilter] = useState("all")
+  const [isOpen, setIsOpen] = useState(false)
 
-  const staff = [
+  const roleOptions = [
+    "Case Manager",
+    "Registered Nurse",
+    "Nurse Practitioner",
+    "Physical Therapist",
+    "Therapist",
+  ] as const
+
+  const staffFormSchema = z.object({
+    firstName: z
+      .string()
+      .trim()
+      .min(1, "First name is required")
+      .min(2, "First name must be at least 2 characters"),
+    lastName: z
+      .string()
+      .trim()
+      .min(1, "Last name is required")
+      .min(2, "Last name must be at least 2 characters"),
+    email: z.string().trim().email("Please enter a valid email"),
+    role: z.enum(roleOptions, { required_error: "Role is required" }),
+  })
+
+  type StaffFormValues = z.infer<typeof staffFormSchema>
+
+  const form = useForm<StaffFormValues>({
+    resolver: zodResolver(staffFormSchema),
+    defaultValues: { firstName: "", lastName: "", email: "", role: undefined as unknown as StaffFormValues["role"] },
+    mode: "onTouched",
+  })
+
+  const initialStaff = [
     {
       id: "S001",
       name: "Dr. Sarah Smith",
@@ -84,6 +121,49 @@ export default function StaffPage() {
     },
   ]
 
+  const [staff, setStaff] = useState(initialStaff)
+
+  const generateNextId = () => {
+    const maxNum = staff.reduce((max, m) => {
+      const n = parseInt(m.id.replace(/\D/g, "")) || 0
+      return Math.max(max, n)
+    }, 0)
+    const next = maxNum + 1
+    return `S${String(next).padStart(3, "0")}`
+  }
+
+  const onSubmit = (values: StaffFormValues) => {
+    const trimmedFirst = values.firstName.trim()
+    const trimmedLast = values.lastName.trim()
+    const today = new Date().toISOString().slice(0, 10)
+
+    const newMember = {
+      id: generateNextId(),
+      name: `${trimmedFirst} ${trimmedLast}`.trim(),
+      role: values.role,
+      department: inferDepartmentFromRole(values.role),
+      status: "active" as const,
+      hireDate: today,
+      onboardingProgress: 0,
+      assignedClients: 0,
+      certifications: [],
+      lastActive: today,
+    }
+
+    setStaff((prev) => [newMember, ...prev])
+    setIsOpen(false)
+    form.reset()
+  }
+
+  const inferDepartmentFromRole = (r: string) => {
+    const rl = r.toLowerCase()
+    if (rl.includes("nurse")) return "Nursing"
+    if (rl.includes("therap")) return "Therapy"
+    if (rl.includes("case")) return "Medical"
+    if (rl.includes("practitioner")) return "Medical"
+    return "General"
+  }
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "active":
@@ -131,10 +211,91 @@ export default function StaffPage() {
             <h1 className="text-3xl font-bold tracking-tight">Staff Management</h1>
             <p className="text-muted-foreground">Manage employee profiles and assignments</p>
           </div>
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Staff Member
-          </Button>
+          <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                Add Staff Member
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[500px]">
+              <DialogHeader>
+                <DialogTitle>Add Staff Member</DialogTitle>
+                <DialogDescription>Fill out the information below to add a new staff member.</DialogDescription>
+              </DialogHeader>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="firstName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>First Name</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Enter first name" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="lastName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Last Name</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Enter last name" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input type="email" placeholder="name@example.com" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="role"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Role</FormLabel>
+                        <FormControl>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a role" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {roleOptions.map((r) => (
+                                <SelectItem key={r} value={r}>{r}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <DialogFooter>
+                    <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>Cancel</Button>
+                    <Button type="submit">Add</Button>
+                  </DialogFooter>
+                </form>
+              </Form>
+            </DialogContent>
+          </Dialog>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
