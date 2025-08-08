@@ -1,30 +1,49 @@
 import Cookies from "js-cookie";
-import {ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY, USER_ID_KEY} from "@/lib/constants/token";
+import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY, USER_ID_KEY, ROLE_KEY } from "@/lib/constants/token";
+import { encryptValue, decryptValue } from "@/lib/utils/cryptoClient";
 
 export async function getTokensClient() {
+  const encAccess = Cookies.get(ACCESS_TOKEN_KEY) || null;
+  const encRefresh = Cookies.get(REFRESH_TOKEN_KEY) || null;
+  const encUserId = Cookies.get(USER_ID_KEY) || null;
+
   return {
-    accessToken: Cookies.get(ACCESS_TOKEN_KEY) || null,
-    refreshToken: Cookies.get(REFRESH_TOKEN_KEY) || null,
-    userId: Cookies.get(USER_ID_KEY) || null,
+    accessToken: await decryptValue(encAccess),
+    refreshToken: await decryptValue(encRefresh),
+    userId: await decryptValue(encUserId),
   };
 }
 
 export async function setTokensClient({
-                                  accessToken,
-                                  refreshToken,
-                                  userId,
-                                }: {
+  accessToken,
+  refreshToken,
+  userId,
+}: {
   accessToken: string;
   refreshToken: string;
   userId: string;
 }) {
-  Cookies.set(ACCESS_TOKEN_KEY, accessToken, { secure: true });
-  Cookies.set(REFRESH_TOKEN_KEY, refreshToken, { secure: true });
-  Cookies.set(USER_ID_KEY, userId, { secure: true });
+  const encAccess = await encryptValue(accessToken);
+  const encRefresh = await encryptValue(refreshToken);
+  const encUserId = await encryptValue(userId);
+
+  Cookies.set(ACCESS_TOKEN_KEY, encAccess, { secure: true, sameSite: "lax" });
+  Cookies.set(REFRESH_TOKEN_KEY, encRefresh, { secure: true, sameSite: "lax" });
+  Cookies.set(USER_ID_KEY, encUserId, { secure: true, sameSite: "lax" });
 }
 
 export async function clearTokensClient() {
   Cookies.remove(ACCESS_TOKEN_KEY);
   Cookies.remove(REFRESH_TOKEN_KEY);
   Cookies.remove(USER_ID_KEY);
+  Cookies.remove(ROLE_KEY);
+}
+
+export async function setUserRoleClient(role: string) {
+  const encRole = await encryptValue(role);
+  Cookies.set(ROLE_KEY, encRole, { secure: true, sameSite: "lax" });
+}
+
+export async function getUserRoleClient(): Promise<string | null> {
+  return decryptValue(Cookies.get(ROLE_KEY) || null);
 }
