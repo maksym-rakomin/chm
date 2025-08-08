@@ -1,8 +1,8 @@
 import type React from "react"
 import type {Metadata} from "next"
 import {Inter} from "next/font/google"
+import {Toaster} from "@/components/ui/sonner"
 import "./globals.css"
-import {Toaster} from "@/components/ui/toaster"
 
 const inter = Inter({subsets: ["latin"]})
 
@@ -23,7 +23,7 @@ export default function RootLayout({
 
     <main className="flex-1">{children}</main>
 
-    <Toaster/>
+    <Toaster richColors closeButton position="top-center" theme="light" />
 
     </body>
     </html>
