@@ -38,7 +38,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { DocumentViewer } from "@/components/document-viewer"
-import { DocumentTemplateCreator } from "@/components/document-template-creator"
+import { FormTemplateCreator } from "@/components/form-template-creator"
 
 const templates = [
   {
@@ -266,7 +266,7 @@ export default function DocumentsPage() {
                 <Plus className="h-12 w-12 text-gray-400 mb-4" />
                 <h3 className="font-medium mb-2">Create New Template</h3>
                 <p className="text-sm text-muted-foreground mb-4">Build a custom document template</p>
-                <DocumentTemplateCreator />
+                <FormTemplateCreator />
               </CardContent>
             </Card>
           </div>

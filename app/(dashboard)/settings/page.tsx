@@ -1,35 +1,11 @@
 "use client"
 import {useRoleGuard} from "@/lib/hooks/useRoleGuard"
-import React from "react"
-import {
-  ArrowRight,
-  Calendar,
-  CheckCircle,
-  Clock,
-  Eye,
-  FileText,
-  Filter,
-  Menu, Plus,
-  Search,
-  User,
-  XCircle
-} from "lucide-react"
+import {useState} from "react"
+import {Eye, FileText, Plus} from "lucide-react"
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card"
 import {Button} from "@/components/ui/button"
 import {Input} from "@/components/ui/input"
-import {SidebarInset, SidebarTrigger} from "@/components/ui/sidebar";
-import {Separator} from "@/components/ui/separator";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator
-} from "@/components/ui/breadcrumb";
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
-import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
-import {Progress} from "@/components/ui/progress";
+import {SidebarInset} from "@/components/ui/sidebar";
 import {FloatingSidebarToggle} from "@/components/floating-sidebar-toggle";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {Label} from "@/components/ui/label";
@@ -47,19 +23,24 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel, DropdownMenuSeparator,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import {DocumentViewer} from "@/components/document-viewer";
 import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel,
-  AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger
 } from "@/components/ui/alert-dialog";
 import {Badge} from "@/components/ui/badge";
-import {DocumentTemplateCreator} from "@/components/document-template-creator";
+import {FormTemplateCreator} from "@/components/form-template-creator";
 import Header from "@/components/header";
 
 const templates = [
@@ -134,10 +115,12 @@ const documents = [
 export default function DocumentsPage() {
   useRoleGuard()
 
+  const [isVisibleCreateTemplateDialog, setIsVisibleCreateTemplateDialog] = useState(false)
+
   return (
     <>
       <SidebarInset>
-      <Header pageTitle="Form Template builder" />
+        <Header pageTitle="Form Template builder"/>
 
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
           <div className="flex items-center justify-between">
@@ -159,29 +142,29 @@ export default function DocumentsPage() {
             <TabsContent value="forms">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-2xl font-bold">Your Forms</h2>
-                <Button>Create New Forms</Button>
+                <Button onClick={() => setIsVisibleCreateTemplateDialog(true)}>Create New Forms</Button>
               </div>
 
               <div className="grid gap-4">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Search Documents</CardTitle>
-                    <CardDescription>Find documents by name, type, or status.</CardDescription>
+                    <CardTitle>Search Forms</CardTitle>
+                    <CardDescription>Find forms by name, type, or status.</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="grid gap-4">
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="col-span-1">
                           <Label htmlFor="name">Name</Label>
-                          <Input id="name" placeholder="Document Name" />
+                          <Input id="name" placeholder="Form Name"/>
                         </div>
                         <div className="col-span-1">
                           <Label htmlFor="type">Type</Label>
-                          <Input id="type" placeholder="Document Type" />
+                          <Input id="type" placeholder="Form Type"/>
                         </div>
                         <div className="col-span-1">
                           <Label htmlFor="status">Status</Label>
-                          <Input id="status" placeholder="Document Status" />
+                          <Input id="status" placeholder="Form Status"/>
                         </div>
                       </div>
                       <Button>Search</Button>
@@ -190,7 +173,7 @@ export default function DocumentsPage() {
                 </Card>
 
                 <Table>
-                  <TableCaption>A list of your recent documents.</TableCaption>
+                  <TableCaption>A list of your recent forms.</TableCaption>
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-[100px]">Name</TableHead>
@@ -212,15 +195,15 @@ export default function DocumentsPage() {
                             <DropdownMenuTrigger asChild>
                               <Button variant="ghost" className="h-8 w-8 p-0">
                                 <span className="sr-only">Open menu</span>
-                                <Eye className="h-4 w-4" />
+                                <Eye className="h-4 w-4"/>
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuLabel>Actions</DropdownMenuLabel>
                               <DropdownMenuItem asChild>
-                                <DocumentViewer document={doc} />
+                                <DocumentViewer document={doc}/>
                               </DropdownMenuItem>
-                              <DropdownMenuSeparator />
+                              <DropdownMenuSeparator/>
                               <DropdownMenuItem>Download</DropdownMenuItem>
                               <DropdownMenuItem>Edit</DropdownMenuItem>
                               <DropdownMenuItem>
@@ -251,7 +234,7 @@ export default function DocumentsPage() {
                   </TableBody>
                   <TableFooter>
                     <TableRow>
-                      <TableCell colSpan={4}>Total Documents: {documents.length}</TableCell>
+                      <TableCell colSpan={4}>Total Forms: {documents.length}</TableCell>
                     </TableRow>
                   </TableFooter>
                 </Table>
@@ -260,7 +243,7 @@ export default function DocumentsPage() {
 
             <TabsContent value="templates">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-bold">Document Templates</h2>
+                <h2 className="text-2xl font-bold">Forms Templates</h2>
               </div>
 
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -268,7 +251,7 @@ export default function DocumentsPage() {
                   <Card key={template.id} className="cursor-pointer hover:shadow-md transition-shadow">
                     <CardHeader className="pb-3">
                       <div className="flex items-center justify-between">
-                        <FileText className="h-8 w-8 text-green-600" />
+                        <FileText className="h-8 w-8 text-green-600"/>
                         <Badge variant="outline">{template.category}</Badge>
                       </div>
                       <CardTitle className="text-lg">{template.name}</CardTitle>
@@ -286,11 +269,11 @@ export default function DocumentsPage() {
                         </div>
                         <div className="flex gap-2 mt-3">
                           <Button size="sm" className="flex-1">
-                            <Plus className="mr-1 h-3 w-3" />
+                            <Plus className="mr-1 h-3 w-3"/>
                             Use Template
                           </Button>
                           <Button size="sm" variant="outline">
-                            <Eye className="h-3 w-3" />
+                            <Eye className="h-3 w-3"/>
                           </Button>
                         </div>
                       </div>
@@ -301,11 +284,10 @@ export default function DocumentsPage() {
                 {/* Add Template Creator Card */}
                 <Card className="border-dashed border-2 hover:border-solid hover:shadow-md transition-all cursor-pointer">
                   <CardContent className="flex flex-col items-center justify-center h-full min-h-[200px] text-center">
-                    <Plus className="h-12 w-12 text-gray-400 mb-4" />
-                    <h3 className="font-medium mb-2">Create New Template 1</h3>
+                    <Plus className="h-12 w-12 text-gray-400 mb-4"/>
+                    <h3 className="font-medium mb-2">Create New Template</h3>
                     <p className="text-sm text-muted-foreground mb-4">Build a custom document template</p>
-                    <DocumentTemplateCreator />
-
+                    <Button onClick={() => setIsVisibleCreateTemplateDialog(true)}>Create New Forms</Button>
                   </CardContent>
                 </Card>
               </div>
@@ -318,8 +300,9 @@ export default function DocumentsPage() {
               {/* Settings content here */}
             </TabsContent>
           </Tabs>
-
         </div>
+
+        <FormTemplateCreator open={isVisibleCreateTemplateDialog} onOpenChange={setIsVisibleCreateTemplateDialog}/>
       </SidebarInset>
       <FloatingSidebarToggle/>
     </>

@@ -38,11 +38,24 @@ interface FormField {
   options?: string[]
 }
 
-export function DocumentTemplateCreator() {
+interface FormTemplateCreatorProps {
+  open?: boolean | undefined
+  onOpenChange?: (open: boolean) => void | undefined
+}
+
+export function FormTemplateCreator({ open, onOpenChange }: FormTemplateCreatorProps) {
   const [templateName, setTemplateName] = useState("")
   const [templateDescription, setTemplateDescription] = useState("")
   const [templateCategory, setTemplateCategory] = useState("")
   const [fields, setFields] = useState<FormField[]>([])
+  const [internalOpen, setInternalOpen] = useState(false)
+
+  const isControlled = open !== undefined
+  const dialogOpen = isControlled ? (open as boolean) : internalOpen
+  const handleOpenChange = (value: boolean) => {
+    onOpenChange?.(value)
+    if (!isControlled) setInternalOpen(value)
+  }
 
   const fieldTypes = [
     { value: "text", label: "Text Input", icon: Type },
@@ -106,13 +119,14 @@ export function DocumentTemplateCreator() {
   }
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
+    <Dialog open={dialogOpen} onOpenChange={handleOpenChange}>
+      {(open === undefined && onOpenChange === undefined) ?? <DialogTrigger asChild>
+        <Button onClick={() => handleOpenChange(true)}>
+          <Plus className="mr-2 h-4 w-4"/>
           Create Template
         </Button>
-      </DialogTrigger>
+      </DialogTrigger>}
+
       <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create Document Template</DialogTitle>
