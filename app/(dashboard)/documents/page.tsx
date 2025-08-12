@@ -94,7 +94,7 @@ const documents = [
 export default function DocumentsPage() {
   useRoleGuard()
   return (
-    <div className="container mx-auto py-10">
+    <div className="container mx-auto py-10 px-4">
       <Tabs defaultValue="documents" className="w-[100%]">
         <TabsList>
           <TabsTrigger value="documents">Documents</TabsTrigger>
