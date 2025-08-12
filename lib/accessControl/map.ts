@@ -1,26 +1,26 @@
-import { UserRole } from "@/lib/types/roles";
+// Derived access map from navigation groups + extra/public routes
+import {UserRole} from "@/lib/types/roles";
+import {extraProtectedRoutes, navigationGroups, publicRoutes} from "@/lib/constants/navigation";
 
-// Карта доступов для маршрутов. Используем пути app router (pathname без параметров)
-// "public" означает доступ всем, включая гостям. Иначе — список ролей с доступом.
-export const accessMap: Record<string, UserRole[] | "public"> = {
-  "/": ["admin", "manager", "user"],
-  "/login": "public",
-  "/forbidden": "public",
-  "/401": "public",
-  "/403": "public",
+export const accessMap: Record<string, UserRole[] | "public"> = (() => {
+  const map: Record<string, UserRole[] | "public"> = { ...publicRoutes };
 
-  // Dashboard (route group is invisible in URL)
-  "/patients": ["admin", "manager", "user"],
-  "/documents": ["admin", "manager"],
-  "/reports": ["admin", "manager"],
-  "/schedule": ["admin", "manager", "user"],
-  "/staff": ["admin", "manager"],
-  "/messages": ["admin", "manager", "user"],
-  "/notifications": ["admin", "manager", "user"],
-  "/status": ["admin", "manager", "user"],
-  "/admin": ["admin"],
-};
+  // Collect from navigation groups
+  for (const group of navigationGroups) {
+    for (const item of group.items) {
+      map[item.url] = item.roles;
+    }
+  }
 
+  // Add extra protected routes
+  for (const [url, roles] of Object.entries(extraProtectedRoutes)) {
+    map[url] = roles;
+  }
+
+  return map;
+})();
+
+// Same resolver logic as before, kept here to be the single source of truth
 export function resolveAccessForPath(pathname: string): UserRole[] | "public" | undefined {
   if (accessMap[pathname]) return accessMap[pathname];
 

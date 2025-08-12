@@ -1,20 +1,6 @@
 "use client"
 
 import type * as React from "react"
-import {
-  Calendar,
-  FileText,
-  Home,
-  MessageSquare,
-  Settings,
-  TrendingUp,
-  Users,
-  UserCheck,
-  ClipboardList,
-  Bell,
-  Search,
-  X,
-} from "lucide-react"
 
 import {
   Sidebar,
@@ -34,77 +20,54 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { useSidebarVisibility } from "./sidebar-context"
+import { useAuthStore } from "@/lib/store/auth"
+import { navigationGroups } from "@/lib/constants/navigation"
+import { hasAccess } from "@/lib/types/roles"
+import {resolveAccessForPath} from "@/lib/accessControl/map";
+import {
+  Bell,
+  Calendar,
+  ClipboardList,
+  FileText,
+  Home,
+  MessageSquare,
+  Search,
+  Settings,
+  TrendingUp,
+  UserCheck,
+  Users,
+  X
+} from "lucide-react";
 
-const navigationItems = [
-  {
-    title: "Overview",
-    items: [
-      {
-        title: "Dashboard",
-        url: "/",
-        icon: Home,
-      },
-    ],
-  },
-  {
-    title: "Management",
-    items: [
-      {
-        title: "Patients",
-        url: "/patients",
-        icon: Users,
-      },
-      {
-        title: "Staff",
-        url: "/staff",
-        icon: UserCheck,
-      },
-      {
-        title: "Schedule",
-        url: "/schedule",
-        icon: Calendar,
-      },
-    ],
-  },
-  {
-    title: "Operations",
-    items: [
-      {
-        title: "Documents",
-        url: "/documents",
-        icon: FileText,
-      },
-      {
-        title: "Status Tracker",
-        url: "/status",
-        icon: ClipboardList,
-      },
-      {
-        title: "Reports",
-        url: "/reports",
-        icon: TrendingUp,
-      },
-    ],
-  },
-  {
-    title: "Communication",
-    items: [
-      {
-        title: "Messages",
-        url: "/messages",
-        icon: MessageSquare,
-      },
-      {
-        title: "Notifications",
-        url: "/notifications",
-        icon: Bell,
-      },
-    ],
-  },
-]
+const Icons = {
+  home: Home,
+  users: Users,
+  userCheck: UserCheck,
+  calendar: Calendar,
+  fileText: FileText,
+  clipboardList: ClipboardList,
+  trendingUp: TrendingUp,
+  messageSquare: MessageSquare,
+  bell: Bell,
+} as const;
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { isVisible, hideSidebar } = useSidebarVisibility()
+  const { role } = useAuthStore()
+
+  const canShow = (url: string): boolean => {
+    const allowed = resolveAccessForPath(url)
+    if (!allowed) return true // routes not in access map are considered unrestricted
+    if (allowed === "public") return true
+    return hasAccess(role, allowed)
+  }
+
+  const filteredGroups = navigationGroups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) => canShow(item.url)),
+    }))
+    .filter((group) => group.items.length > 0)
 
   if (!isVisible) {
     return null
@@ -141,21 +104,24 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </div>
       </SidebarHeader>
       <SidebarContent>
-        {navigationItems.map((group) => (
+        {filteredGroups.map((group) => (
           <SidebarGroup key={group.title}>
             <SidebarGroupLabel>{group.title}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {group.items.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild>
-                      <Link href={item.url}>
-                        <item.icon />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
+                {group.items.map(({ title, url, icon }) => {
+                  const Icon = Icons[icon];
+                  return (
+                    <SidebarMenuItem key={title}>
+                      <SidebarMenuButton asChild>
+                        <Link href={url}>
+                          <Icon />
+                          <span>{title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
@@ -163,14 +129,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild>
-              <Link href="/settings">
-                <Settings />
-                <span>Settings</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
+          {canShow("/settings") && (
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <Link href="/settings">
+                  <Settings />
+                  <span>Settings</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          )}
         </SidebarMenu>
         <div className="flex items-center gap-2 px-2 py-2">
           <Avatar className="h-8 w-8">

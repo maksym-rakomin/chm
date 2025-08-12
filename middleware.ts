@@ -1,8 +1,8 @@
 import { NextResponse, NextRequest } from "next/server";
-import { resolveAccessForPath } from "@/lib/accessControl/map";
 import { ROLE_KEY } from "@/lib/constants/token";
 import { normalizeRole, hasAccess } from "@/lib/types/roles";
 import { decryptValueEdge } from "@/lib/utils/cryptoEdge";
+import {resolveAccessForPath} from "@/lib/accessControl/map";
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;

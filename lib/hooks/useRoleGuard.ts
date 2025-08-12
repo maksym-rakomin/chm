@@ -3,8 +3,8 @@
 import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuthStore } from "@/lib/store/auth";
-import { resolveAccessForPath } from "@/lib/accessControl/map";
 import { hasAccess } from "@/lib/types/roles";
+import {resolveAccessForPath} from "@/lib/accessControl/map";
 
 export function useRoleGuard() {
   const router = useRouter();
