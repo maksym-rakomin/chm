@@ -1,4 +1,5 @@
 "use client"
+import { useRoleGuard } from "@/lib/hooks/useRoleGuard"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -12,6 +13,7 @@ import { Users, UserCheck, Calendar, FileText, Menu } from "lucide-react"
 import { useSidebarVisibility } from "@/components/sidebar-context"
 
 export default function Dashboard() {
+  useRoleGuard()
   const { isVisible, showSidebar } = useSidebarVisibility()
 
   const stats = [

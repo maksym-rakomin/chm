@@ -1,4 +1,5 @@
 "use client"
+import { useRoleGuard } from "@/lib/hooks/useRoleGuard"
 
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -18,6 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar, Plus, ChevronLeft, ChevronRight, Clock, User, MapPin } from "lucide-react"
 
 export default function SchedulePage() {
+  useRoleGuard()
   const [currentDate, setCurrentDate] = useState(new Date())
   const [viewMode, setViewMode] = useState("week")
 

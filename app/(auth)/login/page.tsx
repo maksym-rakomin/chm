@@ -12,11 +12,14 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 
 import { publicFetch } from "@/lib/api/publicApi"
 import { setTokensClient } from "@/lib/api/tokenClient"
+import { useAuthStore } from "@/lib/store/auth"
+import { UserRole } from "@/lib/types/roles"
 import {LoginResponse, LoginValues} from "@/lib/types/login";
 import {LoginSchema} from "@/lib/schema/login";
 
 export default function LoginPage() {
   const router = useRouter()
+  const setRole = useAuthStore((s) => s.setRole)
 
   const form = useForm<LoginValues>({
     resolver: zodResolver(LoginSchema),
@@ -29,16 +32,37 @@ export default function LoginPage() {
 
   async function onSubmit(values: LoginValues) {
     try {
-      const data = await publicFetch<LoginResponse>("/auth/login", {
-        method: "POST",
-        body: JSON.stringify(values),
-      })
+      // const data = await publicFetch<LoginResponse>("/auth/login", {
+      //   method: "POST",
+      //   body: JSON.stringify(values),
+      // })
+      //
+      // await setTokensClient({
+      //   accessToken: data.accessToken,
+      //   refreshToken: data.refreshToken,
+      //   userId: data.userId,
+      // })
 
       await setTokensClient({
-        accessToken: data.accessToken,
-        refreshToken: data.refreshToken,
-        userId: data.userId,
+        accessToken: "data.accessToken",
+        refreshToken: "data.refreshToken",
+        userId: "data.userId",
+        role: 'admin' as UserRole,
       })
+
+      setRole('admin' as UserRole)
+
+
+      // todo Синхронизируем роль на сервере (из accessToken) и кладем в zustand
+      // try {
+      //   const syncRes = await fetch("/api/me/role", { method: "POST" })
+      //   if (syncRes.ok) {
+      //     const payload = (await syncRes.json()) as { role: UserRole }
+      //     setRole(payload.role)
+      //   }
+      // } catch (error) {
+      //   console.log(error.message)
+      // }
 
       router.push("/")
       router.refresh()

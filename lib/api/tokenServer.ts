@@ -1,6 +1,7 @@
-import { cookies } from "next/headers";
-import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY, USER_ID_KEY, ROLE_KEY } from "@/lib/constants/token";
-import { encryptValueServer, decryptValueServer } from "@/lib/utils/cryptoServer";
+import {cookies} from "next/headers";
+import {ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY, ROLE_KEY, USER_ID_KEY} from "@/lib/constants/token";
+import {decryptValueServer, encryptValueServer} from "@/lib/utils/cryptoServer";
+import {UserRole} from "@/lib/types/roles";
 
 export async function getTokensServer() {
   const cookieStore = await cookies();
@@ -12,18 +13,29 @@ export async function getTokensServer() {
 }
 
 export async function setTokensServer({
-  accessToken,
-  refreshToken,
-  userId,
-}: {
+                                        accessToken,
+                                        refreshToken,
+                                        userId,
+                                        role
+                                      }: {
   accessToken: string;
   refreshToken: string;
   userId: string;
+  role?: UserRole;
 }) {
   const cookieStore = await cookies();
-  cookieStore.set(ACCESS_TOKEN_KEY, encryptValueServer(accessToken), { httpOnly: true, secure: true, sameSite: "lax" });
-  cookieStore.set(REFRESH_TOKEN_KEY, encryptValueServer(refreshToken), { httpOnly: true, secure: true, sameSite: "lax" });
-  cookieStore.set(USER_ID_KEY, encryptValueServer(userId), { httpOnly: true, secure: true, sameSite: "lax" });
+  cookieStore.set(ACCESS_TOKEN_KEY, encryptValueServer(accessToken), {httpOnly: true, secure: true, sameSite: "lax"});
+  cookieStore.set(REFRESH_TOKEN_KEY, encryptValueServer(refreshToken), {httpOnly: true, secure: true, sameSite: "lax"});
+  cookieStore.set(USER_ID_KEY, encryptValueServer(userId), {httpOnly: true, secure: true, sameSite: "lax"});
+
+  if (role) {
+    cookieStore.set(ROLE_KEY, encryptValueServer(role), {
+      httpOnly: true,
+      secure: true,
+      sameSite: "lax",
+    });
+  }
+
 }
 
 export async function clearTokensServer() {
@@ -36,7 +48,7 @@ export async function clearTokensServer() {
 
 export async function setUserRoleServer(role: string) {
   const cookieStore = await cookies();
-  cookieStore.set(ROLE_KEY, encryptValueServer(role), { httpOnly: true, secure: true, sameSite: "lax" });
+  cookieStore.set(ROLE_KEY, encryptValueServer(role), {httpOnly: true, secure: true, sameSite: "lax"});
 }
 
 export async function getUserRoleServer(): Promise<string | null> {

@@ -1,4 +1,5 @@
 "use client"
+import { useRoleGuard } from "@/lib/hooks/useRoleGuard"
 
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -21,6 +22,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/
 import { Bar, BarChart, Pie, PieChart, Cell, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend } from "recharts"
 
 export default function ReportsPage() {
+  useRoleGuard()
   const [dateRange, setDateRange] = useState("last_30_days")
   const [reportType, setReportType] = useState("all")
   const { isVisible, showSidebar } = useSidebarVisibility()

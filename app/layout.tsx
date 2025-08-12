@@ -3,6 +3,7 @@ import type {Metadata} from "next"
 import {Inter} from "next/font/google"
 import {Toaster} from "@/components/ui/sonner"
 import "./globals.css"
+import { ClientBootstrap } from "@/components/client-bootstrap"
 
 const inter = Inter({subsets: ["latin"]})
 
@@ -25,6 +26,7 @@ export default function RootLayout({
 
     <Toaster richColors closeButton position="top-center" theme="light" />
 
+    <ClientBootstrap />
     </body>
     </html>
   )

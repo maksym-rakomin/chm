@@ -2,10 +2,10 @@
 import crypto from "crypto";
 
 function getSecret(): Buffer {
-  const secret = process.env.COOKIE_SECRET || process.env.NEXT_PUBLIC_COOKIE_SECRET || "";
+  const secret = process.env.NEXT_PUBLIC_COOKIE_SECRET || "";
   if (!secret) {
     if (process.env.NODE_ENV !== "production") {
-      console.warn("COOKIE_SECRET is not set. Using a weak default for development only.");
+      console.warn("NEXT_PUBLIC_COOKIE_SECRET is not set. Using a weak default for development only.");
       return Buffer.from("dev-insecure-secret");
     }
   }
@@ -28,7 +28,7 @@ export function encryptValueServer(plain: string): string {
   const cipher = crypto.createCipheriv("aes-256-gcm", key, iv);
   const enc = Buffer.concat([cipher.update(plain, "utf8"), cipher.final()]);
   const tag = cipher.getAuthTag();
-  const out = Buffer.concat([iv, tag, enc]); // iv(12) + tag(16) + ciphertext
+  const out = Buffer.concat([iv, enc, tag]); // iv + ciphertext + tag
   return toBase64Url(out);
 }
 
@@ -37,13 +37,32 @@ export function decryptValueServer(payload: string | null): string | null {
   try {
     const key = getSecret();
     const buf = fromBase64Url(payload);
+
+    if (buf.length < 12 + 16) {
+      throw new Error("Malformed payload");
+    }
+
     const iv = buf.subarray(0, 12);
-    const tag = buf.subarray(12, 28);
-    const data = buf.subarray(28);
-    const decipher = crypto.createDecipheriv("aes-256-gcm", key, iv);
-    decipher.setAuthTag(tag);
-    const dec = Buffer.concat([decipher.update(data), decipher.final()]);
-    return dec.toString("utf8");
+    const rest = buf.subarray(12);
+
+    let ciphertext = rest.subarray(0, rest.length - 16);
+    let tag = rest.subarray(rest.length - 16);
+
+    const tryDecrypt = (data: Buffer, atag: Buffer) => {
+      const decipher = crypto.createDecipheriv("aes-256-gcm", key, iv);
+      decipher.setAuthTag(atag);
+      const dec = Buffer.concat([decipher.update(data), decipher.final()]);
+      return dec.toString("utf8");
+    };
+
+    try {
+      return tryDecrypt(ciphertext, tag);
+    } catch {
+
+      const legacyTag = rest.subarray(0, 16);
+      const legacyCiphertext = rest.subarray(16);
+      return tryDecrypt(legacyCiphertext, legacyTag);
+    }
   } catch (e) {
     console.warn("Failed to decrypt cookie value (server)", e);
     return null;

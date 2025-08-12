@@ -1,3 +1,6 @@
+"use client"
+import { useRoleGuard } from "@/lib/hooks/useRoleGuard"
+import React from "react"
 import { Plus, FileText, Eye } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -89,6 +92,7 @@ const documents = [
 ]
 
 export default function DocumentsPage() {
+  useRoleGuard()
   return (
     <div className="container mx-auto py-10">
       <Tabs defaultValue="documents" className="w-[100%]">
