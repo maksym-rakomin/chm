@@ -74,6 +74,12 @@ const documents = [
     type: "Invoice",
     status: "Sent",
     lastUpdated: "2023-12-01",
+    lastModified: "2023-12-01",
+    client: 'string',
+    modifiedBy: 'string',
+    size: 'string',
+    version: 'string',
+    category: 'string',
   },
   {
     id: "doc2",
@@ -81,6 +87,12 @@ const documents = [
     type: "Plan",
     status: "Draft",
     lastUpdated: "2023-12-05",
+    lastModified: "2023-12-05",
+    client: 'string',
+    modifiedBy: 'string',
+    size: 'string',
+    version: 'string',
+    category: 'string',
   },
   {
     id: "doc3",
@@ -88,6 +100,12 @@ const documents = [
     type: "Notes",
     status: "Completed",
     lastUpdated: "2023-12-10",
+    lastModified: "2023-12-10",
+    client: 'string',
+    modifiedBy: 'string',
+    size: 'string',
+    version: 'string',
+    category: 'string',
   },
 ]
 

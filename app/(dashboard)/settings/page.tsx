@@ -60,7 +60,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import {Badge} from "@/components/ui/badge";
 import {DocumentTemplateCreator} from "@/components/document-template-creator";
-import {useSidebarVisibility} from "@/components/sidebar-context";
+import Header from "@/components/header";
 
 const templates = [
   {
@@ -96,6 +96,12 @@ const documents = [
     type: "Invoice",
     status: "Sent",
     lastUpdated: "2023-12-01",
+    lastModified: "2023-12-01",
+    client: 'string',
+    modifiedBy: 'string',
+    size: 'string',
+    version: 'string',
+    category: 'string',
   },
   {
     id: "doc2",
@@ -103,6 +109,12 @@ const documents = [
     type: "Plan",
     status: "Draft",
     lastUpdated: "2023-12-05",
+    lastModified: "2023-12-05",
+    client: 'string',
+    modifiedBy: 'string',
+    size: 'string',
+    version: 'string',
+    category: 'string',
   },
   {
     id: "doc3",
@@ -110,59 +122,44 @@ const documents = [
     type: "Notes",
     status: "Completed",
     lastUpdated: "2023-12-10",
+    lastModified: "2023-12-10",
+    client: 'string',
+    modifiedBy: 'string',
+    size: 'string',
+    version: 'string',
+    category: 'string',
   },
 ]
 
 export default function DocumentsPage() {
   useRoleGuard()
-  const { isVisible, showSidebar } = useSidebarVisibility()
 
   return (
     <>
       <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
-          <div className="flex items-center gap-2 px-4">
-            {isVisible ? (
-              <SidebarTrigger className="-ml-1"/>
-            ) : (
-              <Button variant="ghost" size="icon" onClick={showSidebar} className="h-7 w-7" title="Show sidebar">
-                <Menu className="h-4 w-4"/>
-              </Button>
-            )}
-            <Separator orientation="vertical" className="mr-2 h-4"/>
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem>
-                  <BreadcrumbLink href="/public">Dashboard</BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator/>
-                <BreadcrumbItem>
-                  <BreadcrumbPage>Status Tracker</BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
-          </div>
-        </header>
+      <Header pageTitle="Form Template builder" />
 
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight">Status Tracker</h1>
-              <p className="text-muted-foreground">Monitor patient workflow progress and bottlenecks</p>
+              <h1 className="text-3xl font-bold tracking-tight">Form Template builder</h1>
+              <p className="text-muted-foreground">
+                Manage your documents, templates, and settings from one central location.
+              </p>
             </div>
           </div>
 
-          <Tabs defaultValue="documents" className="w-[100%]">
+          <Tabs defaultValue="forms" className="w-[100%]">
             <TabsList>
-              <TabsTrigger value="documents">Documents</TabsTrigger>
+              <TabsTrigger value="forms">Forms</TabsTrigger>
               <TabsTrigger value="templates">Templates</TabsTrigger>
               <TabsTrigger value="settings">Settings</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="documents">
+            <TabsContent value="forms">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-bold">Your Documents</h2>
-                <Button>Create New Document</Button>
+                <h2 className="text-2xl font-bold">Your Forms</h2>
+                <Button>Create New Forms</Button>
               </div>
 
               <div className="grid gap-4">
@@ -260,6 +257,7 @@ export default function DocumentsPage() {
                 </Table>
               </div>
             </TabsContent>
+
             <TabsContent value="templates">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-2xl font-bold">Document Templates</h2>
@@ -304,13 +302,15 @@ export default function DocumentsPage() {
                 <Card className="border-dashed border-2 hover:border-solid hover:shadow-md transition-all cursor-pointer">
                   <CardContent className="flex flex-col items-center justify-center h-full min-h-[200px] text-center">
                     <Plus className="h-12 w-12 text-gray-400 mb-4" />
-                    <h3 className="font-medium mb-2">Create New Template</h3>
+                    <h3 className="font-medium mb-2">Create New Template 1</h3>
                     <p className="text-sm text-muted-foreground mb-4">Build a custom document template</p>
                     <DocumentTemplateCreator />
+
                   </CardContent>
                 </Card>
               </div>
             </TabsContent>
+
             <TabsContent value="settings">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-2xl font-bold">Settings</h2>

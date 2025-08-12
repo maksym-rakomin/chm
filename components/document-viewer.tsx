@@ -34,9 +34,9 @@ interface DocumentViewerProps {
     id: string
     name: string
     type: string
-    client: string
     status: string
     lastModified: string
+    client: string
     modifiedBy: string
     size: string
     version: string
