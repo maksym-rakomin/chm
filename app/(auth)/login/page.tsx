@@ -16,6 +16,7 @@ import { useAuthStore } from "@/lib/store/auth"
 import { UserRole } from "@/lib/types/roles"
 import {LoginResponse, LoginValues} from "@/lib/types/login";
 import {LoginSchema} from "@/lib/schema/login";
+import {getLogin} from "@/lib/actions/auth";
 
 export default function LoginPage() {
   const router = useRouter()
@@ -32,10 +33,7 @@ export default function LoginPage() {
 
   async function onSubmit(values: LoginValues) {
     try {
-      const response = await publicFetch<LoginResponse>("/authorization/login", {
-        method: "POST",
-        body: JSON.stringify(values),
-      })
+      const response = await getLogin(values)
 
       if (!('data' in response) && response?.data?.token) {
         toast.error('Login failed')
@@ -53,6 +51,7 @@ export default function LoginPage() {
         accessToken: data.plain_text_token,
         refreshToken: data.plain_text_token,
         userId: data.tokenable_id,
+        role: 'admin'
       })
 
       // await setTokensClient({

@@ -44,6 +44,8 @@ export function createAuthFetch(tokenStorage: TokenStorage) {
       headers: {
         "Authorization": `Bearer ${accessToken}`,
         "Content-Type": "application/json",
+        "Accept": "application/json", // todo
+        "X-Tenant": "first", // todo
         ...(options.headers || {}),
       },
       cache: "no-store",
