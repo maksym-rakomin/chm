@@ -15,8 +15,8 @@ export default function RootLayout({
     <SidebarVisibilityProvider>
       <SidebarProvider>
         <div className="flex min-h-screen w-full">
-          <AppSidebar/>
-          <main className="flex-1">{children}</main>
+          <AppSidebar side="left"/>
+          <div className="flex-1">{children}</div>
         </div>
       </SidebarProvider>
     </SidebarVisibilityProvider>

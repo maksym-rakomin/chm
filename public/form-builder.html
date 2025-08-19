@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Builder</title>
+    <link rel="stylesheet" href="/formio.full.min.css">
+    <link rel="stylesheet" href="/bootstrap.min.css">
+
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #ffffff;
+        }
+
+        .formio-builder-wrapper {
+            width: 100%;
+            height: calc(100vh - 66px);
+            border: none;
+            outline: none;
+        }
+
+        /* Override any global styles that might interfere */
+        * {
+            box-sizing: border-box;
+        }
+
+        /* Ensure Form.io styles are properly applied */
+        .formio-builder {
+            height: 100%;
+        }
+
+        .formio-component {
+            margin-bottom: 10px;
+        }
+
+        /* Custom styles for better appearance */
+        .builder-sidebar {
+            background-color: #f8f9fa;
+            border-right: 1px solid #dee2e6;
+        }
+
+        .form-builder-panel {
+            background-color: #ffffff;
+        }
+
+        .formio-dialog {
+            z-index: 9999;
+        }
+        .d-grid.gap-1.no-drop.p-2.w-100 {
+            display: flex;
+            gap: 4px;
+            align-items: start;
+            justify-content: start;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+<body>
+<div id="formio-builder" class="formio-builder-wrapper"></div>
+
+<script src="/formio.full.min.js"></script>
+<script>
+    let formBuilder
+    let currentForm = {components: []}
+
+    // Initialize Form.io Builder
+    function initializeBuilder() {
+        // Create Form.io Builder
+        Formio
+            .builder(document.getElementById('formio-builder'), currentForm)
+            .then(function (builder) {
+                formBuilder = builder
+
+                // builder.on('saveComponent', function () {
+                //     console.log(builder.schema)
+                // })
+
+                builder.on('change', function (form) {
+                    currentForm = form
+                    // Send form data to parent window
+                    if (window.parent && window.parent !== window && 'components' in form) {
+                        window.parent.postMessage({
+                            type: 'FORM_BUILDER_CHANGE',
+                            data: form
+                        }, '*')
+                    }
+                })
+            })
+            .catch(function (error) {
+                console.error('Error initializing Form.io Builder:', error)
+            })
+    }
+
+    // Listen for messages from parent window
+    window.addEventListener('message', function (event) {
+        if (event.data && event.data.type === 'SET_FORM_DATA') {
+            currentForm = event.data.data || {components: []}
+            if (formBuilder) {
+                formBuilder.form = currentForm
+            }
+        }
+    })
+
+    // Initialize when DOM is loaded
+    document.addEventListener('DOMContentLoaded', initializeBuilder)
+
+    // Handle window resize
+    window.addEventListener('resize', function () {
+        if (formBuilder && formBuilder.redraw) {
+            formBuilder.redraw()
+        }
+    })
+</script>
+</body>
+</html>
