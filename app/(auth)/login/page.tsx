@@ -50,9 +50,9 @@ export default function LoginPage() {
       }
 
       await setTokensClient({
-        accessToken: data.token,
-        refreshToken: data.token,
-        userId: data.id,
+        accessToken: data.plain_text_token,
+        refreshToken: data.plain_text_token,
+        userId: data.tokenable_id,
       })
 
       // await setTokensClient({
