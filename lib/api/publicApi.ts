@@ -6,11 +6,17 @@ export async function publicFetch<T>(
     ...options,
     headers: {
       "Content-Type": "application/json",
+      "Accept": "application/json", // todo
+      "X-Tenant": "first", // todo
       ...(options.headers || {}),
     },
     cache: "no-store",
   });
 
-  if (!res.ok) throw new Error(`API error: ${res.status}`);
+
+  if (!res.ok) {
+    const parseRes = await res.json()
+    throw new Error(`API error: ${parseRes.message}`);
+  }
   return res.json();
 }

@@ -1,4 +1,4 @@
-export type UserRole = "admin" | "manager" | "user" | "guest";
+export type UserRole = "admin" | "manager" | "user" | "guest" | null;
 
 export function normalizeRole(raw: string | null | undefined): UserRole {
   const value = (raw || "").toLowerCase();

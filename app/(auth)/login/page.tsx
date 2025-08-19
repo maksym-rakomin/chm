@@ -32,25 +32,36 @@ export default function LoginPage() {
 
   async function onSubmit(values: LoginValues) {
     try {
-      // const data = await publicFetch<LoginResponse>("/auth/login", {
-      //   method: "POST",
-      //   body: JSON.stringify(values),
-      // })
-      //
+      const response = await publicFetch<LoginResponse>("/authorization/login", {
+        method: "POST",
+        body: JSON.stringify(values),
+      })
+
+      if (!('data' in response) && response?.data?.token) {
+        toast.error('Login failed')
+        return
+      }
+
+      const data = response?.data
+
+      if (!data) {
+        toast.error('Login failed')
+        return
+      }
+
+      await setTokensClient({
+        accessToken: data.token,
+        refreshToken: data.token,
+        userId: data.id,
+      })
+
       // await setTokensClient({
       //   accessToken: data.accessToken,
       //   refreshToken: data.refreshToken,
       //   userId: data.userId,
       // })
-
-      await setTokensClient({
-        accessToken: "data.accessToken",
-        refreshToken: "data.refreshToken",
-        userId: "data.userId",
-        role: 'admin' as UserRole,
-      })
-
-      setRole('admin' as UserRole)
+      //
+      setRole('admin' as UserRole) // todo
 
 
       // todo Синхронизируем роль на сервере (из accessToken) и кладем в zustand
@@ -66,9 +77,9 @@ export default function LoginPage() {
 
       router.push("/")
       router.refresh()
-    } catch (err: any) {
-      const message = err?.message ? String(err.message) : "Login failed"
-      toast.error(message)
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Login failed";
+      toast.error(message);
     }
   }
 
