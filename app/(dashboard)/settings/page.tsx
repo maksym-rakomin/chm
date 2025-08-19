@@ -1,6 +1,6 @@
 "use client"
 import {useRoleGuard} from "@/lib/hooks/useRoleGuard"
-import {useMemo, useState} from "react"
+import React, {useEffect, useState} from "react"
 import {Eye, FileText, Plus} from "lucide-react"
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card"
 import {Button} from "@/components/ui/button"
@@ -42,8 +42,9 @@ import {Badge} from "@/components/ui/badge";
 import {FormTemplateCreator} from "@/components/form-template-creator";
 import Header from "@/components/header";
 import {useQuery} from "@tanstack/react-query";
-import {GET_FORMS_CATEGORIES_ALL, GET_FORMS_CONFIGURATION_ALL} from "@/lib/constants/form";
-import {getFormCategoriesAll, getFormConfigurationsAll} from "@/lib/actions/forms";
+import {GET_FORMS_CONFIGURATION_ALL} from "@/lib/constants/form";
+import {getFormConfigurationsAll} from "@/lib/actions/forms";
+import {useFormCategoriesStore} from "@/lib/stores/form-categories-store";
 
 const templates = [
   {
@@ -80,23 +81,17 @@ export default function DocumentsPage() {
   const formsSchemaList = useQuery({
     queryKey: [GET_FORMS_CONFIGURATION_ALL],
     queryFn: getFormConfigurationsAll,
+
   });
 
-  const formsCategoriesList = useQuery({
-    queryKey: [GET_FORMS_CATEGORIES_ALL],
-    queryFn: getFormCategoriesAll,
-  });
+  const {categoriesById, isLoading: categoriesLoading, fetchCategories} = useFormCategoriesStore();
 
-  const categoriesById = useMemo(() => {
-    const list = formsCategoriesList.data?.data ?? []
-    return list.reduce<Record<string, string>>((acc, c) => {
-      acc[String(c.id)] = c.name
-      return acc
-    }, {})
-  }, [formsCategoriesList.data])
+  // Fetch categories on component mount
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
 
-
-  const isLoading = formsSchemaList.isLoading || formsCategoriesList.isLoading
+  const isLoading = formsSchemaList.isLoading || categoriesLoading
 
   return (
     <>

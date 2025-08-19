@@ -20,7 +20,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { useSidebarVisibility } from "./sidebar-context"
-import { useAuthStore } from "@/lib/store/auth"
+import { useAuthStore } from "@/lib/stores/auth"
 import { navigationGroups } from "@/lib/constants/navigation"
 import { hasAccess } from "@/lib/types/roles"
 import {resolveAccessForPath} from "@/lib/accessControl/map";

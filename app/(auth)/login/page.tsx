@@ -10,9 +10,8 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 
-import { publicFetch } from "@/lib/api/publicApi"
 import { setTokensClient } from "@/lib/api/tokenClient"
-import { useAuthStore } from "@/lib/store/auth"
+import { useAuthStore } from "@/lib/stores/auth"
 import { UserRole } from "@/lib/types/roles"
 import {LoginResponse, LoginValues} from "@/lib/types/login";
 import {LoginSchema} from "@/lib/schema/login";

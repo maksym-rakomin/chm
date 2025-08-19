@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { useAuthStore } from "@/lib/store/auth";
+import { useAuthStore } from "@/lib/stores/auth";
 import { hasAccess } from "@/lib/types/roles";
 import {resolveAccessForPath} from "@/lib/accessControl/map";
 
