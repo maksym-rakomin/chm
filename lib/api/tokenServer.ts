@@ -28,15 +28,13 @@ export async function setTokensServer({
   role?: UserRole;
 }) {
   const cookieStore = await cookies();
-  cookieStore.set(ACCESS_TOKEN_KEY, encryptValueServer(accessToken), {httpOnly: true, secure: true, sameSite: "lax"});
-  cookieStore.set(REFRESH_TOKEN_KEY, encryptValueServer(refreshToken), {httpOnly: true, secure: true, sameSite: "lax"});
-  cookieStore.set(USER_ID_KEY, encryptValueServer(userId.toString()), {httpOnly: true, secure: true, sameSite: "lax"});
+  cookieStore.set(ACCESS_TOKEN_KEY, encryptValueServer(accessToken), {httpOnly: true});
+  cookieStore.set(REFRESH_TOKEN_KEY, encryptValueServer(refreshToken), {httpOnly: true});
+  cookieStore.set(USER_ID_KEY, encryptValueServer(userId.toString()), {httpOnly: true});
 
   if (role) {
     cookieStore.set(ROLE_KEY, encryptValueServer(role), {
       httpOnly: true,
-      secure: true,
-      sameSite: "lax",
     });
   }
 
@@ -53,7 +51,7 @@ export async function clearTokensServer() {
 export async function setUserRoleServer(role: UserRole) {
   if (role) {
     const cookieStore = await cookies();
-    cookieStore.set(ROLE_KEY, encryptValueServer(role), {httpOnly: true, secure: true, sameSite: "lax"});
+    cookieStore.set(ROLE_KEY, encryptValueServer(role), {httpOnly: true});
   }
 }
 

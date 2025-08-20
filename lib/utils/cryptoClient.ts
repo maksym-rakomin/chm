@@ -1,6 +1,8 @@
+"use client"
 // Client-side encryption/decryption for cookies using Web Crypto (AES-GCM)
 // WARNING: Requires NEXT_PUBLIC_COOKIE_SECRET to be defined. This provides confidentiality at-rest in cookies,
 // but since the secret is present on the client, it does not protect against a fully compromised client.
+import { webcrypto } from "crypto";
 
 function getSecret(): string {
   const secret = process.env.NEXT_PUBLIC_COOKIE_SECRET || "";
@@ -14,19 +16,51 @@ function getSecret(): string {
   return secret;
 }
 
+const subtle =
+  typeof window !== "undefined"
+    ? window.crypto.subtle
+    : webcrypto.subtle;
+
+
 async function getKey(): Promise<CryptoKey> {
-  const enc = new TextEncoder();
-  const secretBytes = enc.encode(getSecret());
-  // Derive a 256-bit key from the secret using SHA-256
-  const hash = await crypto.subtle.digest("SHA-256", secretBytes);
-  return crypto.subtle.importKey(
-    "raw",
-    hash,
-    { name: "AES-GCM" },
-    false,
-    ["encrypt", "decrypt"]
-  );
+  console.log(1)
+  try {
+
+    const enc = new TextEncoder();
+    const secretBytes = enc.encode(getSecret());
+    const hash = await subtle.digest("SHA-256", secretBytes);
+
+    return subtle.importKey(
+      "raw",
+      hash,
+      {name: "AES-GCM"},
+      false,
+      ["encrypt", "decrypt"]
+    );
+
+  } catch (e) {
+    console.warn(1, e.message)
+  }
 }
+
+// async function getKey(): Promise<CryptoKey> {
+//   try {
+//
+//     const enc = new TextEncoder();
+//     const secretBytes = enc.encode(getSecret());
+//     // Derive a 256-bit key from the secret using SHA-256
+//     const hash = await crypto.subtle.digest("SHA-256", secretBytes);
+//     return crypto.subtle.importKey(
+//       "raw",
+//       hash,
+//       {name: "AES-GCM"},
+//       false,
+//       ["encrypt", "decrypt"]
+//     );
+//   } catch (e) {
+//     console.warn(1, e.message)
+//   }
+// }
 
 function toBase64Url(bytes: Uint8Array): string {
   let str = typeof Buffer !== "undefined" ? Buffer.from(bytes).toString("base64") : btoa(String.fromCharCode(...bytes));

@@ -1,0 +1,28 @@
+# Включить модуль RewriteEngine
+RewriteEngine On
+
+# 1. Запрет на доступ к файлам .htaccess
+# Это важная мера безопасности.
+<Files .htaccess>
+    Require all denied
+</Files>
+
+# 2. Добавить или убрать "www" (здесь: добавить www)
+# Если ваш сайт должен быть доступен с www, этот код перенаправит
+# всех пользователей с site.com на www.site.com
+# Если вы хотите убрать www, просто поменяйте правило.
+
+RewriteCond %{HTTP_HOST} !^www\. [NC]
+RewriteRule ^(.*)$ http://www.%{HTTP_HOST}/$1 [R=301,L]
+
+# 3. Перенаправление страниц с /page на /page.html
+# Это делает URL-адреса более "чистыми" и дружелюбными.
+# Например, пользователь переходит на site.com/about, а сервер
+# показывает ему содержимое файла site.com/about.html
+
+RewriteCond %{REQUEST_FILENAME}.html -f
+RewriteRule ^(.*)$ $1.html [L]
+
+# 4. Обработка ошибок
+# Настройка кастомных страниц ошибок, например, для ошибки 404 (страница не найдена).
+ErrorDocument 404 /404.html

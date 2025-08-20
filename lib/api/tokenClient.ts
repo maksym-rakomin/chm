@@ -36,13 +36,13 @@ export async function setTokensClient({
   const encRefresh = await encryptValue(refreshToken);
   const encUserId = await encryptValue(userId.toString());
 
-  Cookies.set(ACCESS_TOKEN_KEY, encAccess, {secure: true, sameSite: "lax"});
-  Cookies.set(REFRESH_TOKEN_KEY, encRefresh, {secure: true, sameSite: "lax"});
-  Cookies.set(USER_ID_KEY, encUserId, {secure: true, sameSite: "lax"});
+  Cookies.set(ACCESS_TOKEN_KEY, encAccess);
+  Cookies.set(REFRESH_TOKEN_KEY, encRefresh);
+  Cookies.set(USER_ID_KEY, encUserId);
 
   if (role) {
     const encRole = await encryptValue(role);
-    Cookies.set(ROLE_KEY, encRole, {secure: true, sameSite: "lax"});
+    Cookies.set(ROLE_KEY, encRole);
   }
 }
 
@@ -56,7 +56,7 @@ export async function clearTokensClient() {
 export async function setUserRoleClient(role: UserRole) {
   if (role) {
     const encRole = await encryptValue(role);
-    Cookies.set(ROLE_KEY, encRole, {secure: true, sameSite: "lax"});
+    Cookies.set(ROLE_KEY, encRole);
   }
 }
 

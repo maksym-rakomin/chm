@@ -2,6 +2,7 @@
 import crypto from "crypto";
 
 function getSecret(): Buffer {
+  console.log(3)
   const secret = process.env.NEXT_PUBLIC_COOKIE_SECRET || "";
   if (!secret) {
     if (process.env.NODE_ENV !== "production") {
@@ -9,8 +10,12 @@ function getSecret(): Buffer {
       return Buffer.from("dev-insecure-secret");
     }
   }
-  // Derive 32-byte key via SHA-256
-  return crypto.createHash("sha256").update(secret).digest();
+  try {
+    // Derive 32-byte key via SHA-256
+    return crypto.createHash("sha256").update(secret).digest();
+  } catch (e) {
+    console.warn(3, e.message)
+  }
 }
 
 function toBase64Url(buf: Buffer): string {

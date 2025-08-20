@@ -15,14 +15,14 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
+import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar"
+import {Input} from "@/components/ui/input"
+import {Button} from "@/components/ui/button"
 import Link from "next/link"
-import { useSidebarVisibility } from "./sidebar-context"
-import { useAuthStore } from "@/lib/stores/auth"
-import { navigationGroups } from "@/lib/constants/navigation"
-import { hasAccess } from "@/lib/types/roles"
+import {useSidebarVisibility} from "./sidebar-context"
+import {useAuthStore} from "@/lib/stores/auth"
+import {navigationGroups} from "@/lib/constants/navigation"
+import {hasAccess} from "@/lib/types/roles"
 import {resolveAccessForPath} from "@/lib/accessControl/map";
 import {
   Bell,
@@ -51,9 +51,9 @@ const Icons = {
   bell: Bell,
 } as const;
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { isVisible, hideSidebar } = useSidebarVisibility()
-  const { role } = useAuthStore()
+export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
+  const {isVisible, hideSidebar} = useSidebarVisibility()
+  const {role} = useAuthStore()
 
   const canShow = (url: string): boolean => {
     const allowed = resolveAccessForPath(url)
@@ -79,7 +79,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <div className="flex items-center justify-between px-4 py-2">
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <UserCheck className="h-4 w-4" />
+              <UserCheck className="h-4 w-4"/>
             </div>
             <div className="grid flex-1 text-left text-sm leading-tight">
               <span className="truncate font-semibold">Patient Management</span>
@@ -93,13 +93,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             className="h-6 w-6 text-muted-foreground hover:text-foreground"
             title="Close sidebar"
           >
-            <X className="h-4 w-4" />
+            <X className="h-4 w-4"/>
           </Button>
         </div>
         <div className="px-4 pb-2">
           <div className="relative">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Search..." className="pl-8" />
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground"/>
+            <Input placeholder="Search..." className="pl-8"/>
           </div>
         </div>
       </SidebarHeader>
@@ -109,13 +109,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarGroupLabel>{group.title}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {group.items.map(({ title, url, icon }) => {
+                {group.items.map(({title, url, icon}) => {
                   const Icon = Icons[icon];
                   return (
                     <SidebarMenuItem key={title}>
                       <SidebarMenuButton asChild>
                         <Link href={url}>
-                          <Icon />
+                          <Icon/>
                           <span>{title}</span>
                         </Link>
                       </SidebarMenuButton>
@@ -133,7 +133,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuItem>
               <SidebarMenuButton asChild>
                 <Link href="/settings">
-                  <Settings />
+                  <Settings/>
                   <span>Settings</span>
                 </Link>
               </SidebarMenuButton>
@@ -141,17 +141,25 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           )}
         </SidebarMenu>
         <div className="flex items-center gap-2 px-2 py-2">
-          <Avatar className="h-8 w-8">
-            <AvatarImage src="/placeholder-user.jpg" />
-            <AvatarFallback>JD</AvatarFallback>
-          </Avatar>
-          <div className="grid flex-1 text-left text-sm leading-tight">
-            <span className="truncate font-semibold">John Doe</span>
-            <span className="truncate text-xs text-muted-foreground">Case Manager</span>
-          </div>
+          {canShow("/settings")
+            ? (<>
+              <Avatar className="h-8 w-8">
+                <AvatarImage src="/placeholder-user.jpg"/>
+                <AvatarFallback>JD</AvatarFallback>
+              </Avatar>
+              <div className="grid flex-1 text-left text-sm leading-tight">
+                <span className="truncate font-semibold">John Doe</span>
+                <span className="truncate text-xs text-muted-foreground">Case Manager</span>
+              </div>
+            </>)
+            : (
+              <Link href="/login" className="flex items-center gap-2" title="Login">
+                <span>To Login</span>
+              </Link>
+            )}
         </div>
       </SidebarFooter>
-      <SidebarRail />
+      <SidebarRail/>
     </Sidebar>
   )
 }

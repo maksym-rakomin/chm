@@ -12,10 +12,15 @@ function fromBase64Url(b64url: string): Uint8Array {
 }
 
 async function getKey(): Promise<CryptoKey> {
-  const secret = process.env.NEXT_PUBLIC_COOKIE_SECRET || "";
-  const secretBytes = toUint8ArrayFromString(secret);
-  const hash = await crypto.subtle.digest("SHA-256", secretBytes);
-  return crypto.subtle.importKey("raw", hash, { name: "AES-GCM" }, false, ["decrypt"]);
+  console.log(2)
+  try {
+    const secret = process.env.NEXT_PUBLIC_COOKIE_SECRET || "";
+    const secretBytes = toUint8ArrayFromString(secret);
+    const hash = await crypto.subtle.digest("SHA-256", secretBytes);
+    return crypto.subtle.importKey("raw", hash, {name: "AES-GCM"}, false, ["decrypt"]);
+  } catch (e) {
+    console.warn(2, e.message)
+  }
 }
 
 export async function decryptValueEdge(payload: string | null): Promise<string | null> {
