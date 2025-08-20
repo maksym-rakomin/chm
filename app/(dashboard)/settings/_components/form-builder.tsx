@@ -4,9 +4,11 @@ import {Button} from "@/components/ui/button";
 
 type Props = {
   setVisibleDialog: (visible: boolean) => void;
+  onSave?: (schema: any) => void;
+  onCancel?: () => void;
 }
 
-const FormBuilder = ({setVisibleDialog}: Props) => {
+const FormBuilder = ({setVisibleDialog, onSave, onCancel}: Props) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [form, setForm] = useState<any>({
     components: []
@@ -44,20 +46,20 @@ const FormBuilder = ({setVisibleDialog}: Props) => {
     }
   };
 
-  const handleCloseDialog = () => {
+  const resetAndClose = () => {
     setVisibleDialog(false);
-    setForm({
-        components: []
-      }
-    )
+    setForm({ components: [] });
+  }
+
+  const handleCloseDialog = () => {
+    onCancel?.();
+    resetAndClose();
   }
 
   const handleSaveForm = () => {
-    setVisibleDialog(false);
-    setForm({
-        components: []
-      }
-    )
+    // Emit the current form schema to parent before closing
+    onSave?.(form);
+    resetAndClose();
   }
 
   return (

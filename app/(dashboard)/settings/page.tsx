@@ -81,7 +81,6 @@ export default function DocumentsPage() {
   const formsSchemaList = useQuery({
     queryKey: [GET_FORMS_CONFIGURATION_ALL],
     queryFn: getFormConfigurationsAll,
-
   });
 
   const {categoriesById, isLoading: categoriesLoading, fetchCategories} = useFormCategoriesStore();
