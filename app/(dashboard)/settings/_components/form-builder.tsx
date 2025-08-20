@@ -6,13 +6,20 @@ type Props = {
   setVisibleDialog: (visible: boolean) => void;
   onSave?: (schema: any) => void;
   onCancel?: () => void;
+  initialForm?: any;
 }
 
-const FormBuilder = ({setVisibleDialog, onSave, onCancel}: Props) => {
+const FormBuilder = ({setVisibleDialog, onSave, onCancel, initialForm}: Props) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const [form, setForm] = useState<any>({
-    components: []
-  });
+  const [form, setForm] = useState<any>(initialForm ?? { components: [] });
+
+  useEffect(() => {
+    // Allow parent to update initial form (e.g., edit mode prefill)
+    if (initialForm && JSON.stringify(initialForm) !== JSON.stringify(form)) {
+      setForm(initialForm);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialForm]);
 
   useEffect(() => {
     // Listen for messages from the iframe

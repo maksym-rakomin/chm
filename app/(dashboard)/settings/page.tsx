@@ -1,6 +1,6 @@
 "use client"
 import {useRoleGuard} from "@/lib/hooks/useRoleGuard"
-import React, {useEffect, useState} from "react"
+import React, {useEffect, useMemo, useState} from "react"
 import {Eye, FileText, Plus} from "lucide-react"
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card"
 import {Button} from "@/components/ui/button"
@@ -23,8 +23,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import {
@@ -35,16 +33,16 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger
+  AlertDialogTitle
 } from "@/components/ui/alert-dialog";
 import {Badge} from "@/components/ui/badge";
 import {FormTemplateCreator} from "@/components/form-template-creator";
 import Header from "@/components/header";
-import {useQuery} from "@tanstack/react-query";
+import {useQuery, useQueryClient} from "@tanstack/react-query";
 import {GET_FORMS_CONFIGURATION_ALL} from "@/lib/constants/form";
-import {getFormConfigurationsAll} from "@/lib/actions/forms";
+import {deleteFormConfigurations, getFormConfigurationsAll} from "@/lib/actions/forms";
 import {useFormCategoriesStore} from "@/lib/stores/form-categories-store";
+import type {FormConfigurationsListResponse} from "@/lib/types/forms";
 
 const templates = [
   {
@@ -73,10 +71,17 @@ const templates = [
   },
 ]
 
+type FormItem = FormConfigurationsListResponse['data'][number]
+
 export default function DocumentsPage() {
   useRoleGuard()
 
   const [isVisibleCreateTemplateDialog, setIsVisibleCreateTemplateDialog] = useState(false)
+  const [isVisibleEditDialog, setIsVisibleEditDialog] = useState(false)
+  const [formToEdit, setFormToEdit] = useState<FormItem | null>(null)
+  const [formToDelete, setFormToDelete] = useState<FormItem | null>(null)
+
+  const queryClient = useQueryClient()
 
   const formsSchemaList = useQuery({
     queryKey: [GET_FORMS_CONFIGURATION_ALL],
@@ -91,6 +96,27 @@ export default function DocumentsPage() {
   }, [fetchCategories]);
 
   const isLoading = formsSchemaList.isLoading || categoriesLoading
+
+  const handleEdit = (form: FormItem) => {
+    setFormToEdit(form)
+    setIsVisibleEditDialog(true)
+  }
+  const handleDelete = (form: FormItem) => {
+    setFormToDelete(form)
+  }
+  const confirmDelete = async () => {
+    if (!formToDelete) return
+    try {
+      await deleteFormConfigurations(Number(formToDelete.id))
+    } catch (e) {
+      console.error('Failed to delete form', e)
+    } finally {
+      setFormToDelete(null)
+      await queryClient.invalidateQueries({ queryKey: [GET_FORMS_CONFIGURATION_ALL] })
+    }
+  }
+
+  const deleteDialogTitle = useMemo(() => `Delete form "${formToDelete?.name ?? ''}"?`, [formToDelete])
 
   return (
     <>
@@ -188,31 +214,8 @@ export default function DocumentsPage() {
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
-                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                <DropdownMenuItem>View</DropdownMenuItem>
-                                <DropdownMenuSeparator/>
-                                <DropdownMenuItem>Download</DropdownMenuItem>
-                                <DropdownMenuItem>Edit</DropdownMenuItem>
-                                <DropdownMenuItem>
-                                  <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                      <DropdownMenuItem>Delete</DropdownMenuItem>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                      <AlertDialogHeader>
-                                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                          This action cannot be undone. This will permanently delete your form from our
-                                          servers.
-                                        </AlertDialogDescription>
-                                      </AlertDialogHeader>
-                                      <AlertDialogFooter>
-                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                        <AlertDialogAction>Continue</AlertDialogAction>
-                                      </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                  </AlertDialog>
-                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleEdit(form)}>Edit</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleDelete(form)}>Delete</DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
                           </TableCell>
@@ -293,7 +296,23 @@ export default function DocumentsPage() {
           </Tabs>
         </div>
 
-        <FormTemplateCreator open={isVisibleCreateTemplateDialog} onOpenChange={setIsVisibleCreateTemplateDialog}/>
+        <FormTemplateCreator open={isVisibleCreateTemplateDialog} onOpenChange={setIsVisibleCreateTemplateDialog} mode="create" />
+        <FormTemplateCreator open={isVisibleEditDialog} onOpenChange={(v) => { setIsVisibleEditDialog(v); if (!v) setFormToEdit(null); }} mode="edit" formToEdit={formToEdit} />
+
+        <AlertDialog open={!!formToDelete}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{deleteDialogTitle}</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete the form configuration.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setFormToDelete(null)}>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </SidebarInset>
       <FloatingSidebarToggle/>
     </>

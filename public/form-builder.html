@@ -96,6 +96,7 @@
 
     // Listen for messages from parent window
     window.addEventListener('message', function (event) {
+        console.log(111, event)
         if (event.data && event.data.type === 'SET_FORM_DATA') {
             currentForm = event.data.data || {components: []}
             if (formBuilder) {

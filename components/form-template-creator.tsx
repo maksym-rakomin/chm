@@ -15,8 +15,8 @@ import {Label} from "@/components/ui/label"
 import {Input} from "@/components/ui/input"
 import {useFormCategoriesStore} from "@/lib/stores/form-categories-store"
 import {useFormTemplateDraftStore} from "@/lib/stores/form-template-draft-store"
-import {postFormConfigurations} from "@/lib/actions/forms"
-import type {RequestFormSchema} from "@/lib/types/forms"
+import {postFormConfigurations, updateFormConfigurations} from "@/lib/actions/forms"
+import type {RequestFormSchema, FormConfigurationsListResponse} from "@/lib/types/forms"
 import dynamic from "next/dynamic";
 
 import {
@@ -34,9 +34,13 @@ const CustomFormBuilder = dynamic(
   {ssr: false}
 );
 
+type EditForm = FormConfigurationsListResponse['data'][number] | null
+
 interface FormTemplateCreatorProps {
   open?: boolean | undefined
   onOpenChange?: (open: boolean) => void | undefined
+  mode?: 'create' | 'edit'
+  formToEdit?: EditForm
 }
 
 type StatusOption = { label: string; value: 'draft' | 'active' | 'archived' }
@@ -46,11 +50,12 @@ const STATUS_OPTIONS: StatusOption[] = [
   { label: 'Archived', value: 'archived' },
 ]
 
-export function FormTemplateCreator({open, onOpenChange}: FormTemplateCreatorProps) {
+export function FormTemplateCreator({open, onOpenChange, mode = 'create', formToEdit = null}: FormTemplateCreatorProps) {
   const [internalOpen, setInternalOpen] = useState(false)
   const [metaOpen, setMetaOpen] = useState(false)
   const [builderOpen, setBuilderOpen] = useState(false)
   const [errors, setErrors] = useState<{ name?: string; category?: string; status?: string }>({})
+  const [initialFormSchema, setInitialFormSchema] = useState<any>({ components: [] })
   const queryClient = useQueryClient()
 
   const isControlled = open !== undefined
@@ -58,6 +63,22 @@ export function FormTemplateCreator({open, onOpenChange}: FormTemplateCreatorPro
   const startFlow = () => {
     if (!isControlled) setInternalOpen(true)
     setErrors({})
+
+    // Prefill draft/meta in edit mode
+    if (mode === 'edit' && formToEdit) {
+      const parsedSchema = safeParseSchema(formToEdit.form_schema)
+      setInitialFormSchema(parsedSchema ?? { components: [] })
+      setMeta({
+        name: formToEdit.name ?? '',
+        description: formToEdit.description ?? null,
+        status: (formToEdit.status as any) ?? 'draft',
+        form_category_id: Number(formToEdit.form_category_id) || null,
+      })
+    } else {
+      setInitialFormSchema({ components: [] })
+      reset() // ensure clean draft for create
+    }
+
     setMetaOpen(true)
     setBuilderOpen(false)
   }
@@ -88,23 +109,35 @@ export function FormTemplateCreator({open, onOpenChange}: FormTemplateCreatorPro
       setMetaOpen(false)
       setBuilderOpen(false)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [flowOpen])
 
   // Local controlled inputs for step 1, derive initial values from store
   const [name, setName] = useState(draft.name)
   const [description, setDescription] = useState(draft.description ?? '')
   const [status, setStatus] = useState<'draft'|'active'|'archived'>(draft.status)
-  const [categoryId, setCategoryId] = useState<string>(draft.form_category_id ? String(draft.form_category_id) : '')
+  const [categoryId, setCategoryId] = useState<string>(
+    draft.form_category_id ? String(draft.form_category_id) : ''
+  )
 
   // Reset form inputs when metadata dialog opens
   useEffect(() => {
     if (metaOpen) {
-      setName(draft.name)
-      setDescription(draft.description ?? '')
-      setStatus(draft.status)
-      setCategoryId(draft.form_category_id ? String(draft.form_category_id) : '')
+      // In edit mode, pull from formToEdit; otherwise from draft
+      if (mode === 'edit' && formToEdit) {
+        setName(formToEdit.name ?? '')
+        setDescription(formToEdit.description ?? '')
+        setStatus((formToEdit.status as any) ?? 'draft')
+        setCategoryId(String(formToEdit.form_category_id ?? ''))
+      } else {
+        setName(draft.name)
+        setDescription(draft.description ?? '')
+        setStatus(draft.status)
+        setCategoryId(draft.form_category_id ? String(draft.form_category_id) : '')
+      }
     }
-  }, [metaOpen])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [metaOpen, mode, formToEdit])
 
   const categoryOptions = useMemo(() => (
     categories.map(c => ({ value: String(c.id), label: c.name }))
@@ -137,27 +170,38 @@ export function FormTemplateCreator({open, onOpenChange}: FormTemplateCreatorPro
     endFlow()
   }
 
+  const buildPayload = (schema: any): RequestFormSchema => {
+    return {
+      form_category_id: Number(draft.form_category_id ?? categoryId),
+      name: draft.name || name.trim(),
+      description: (draft.description ?? (description.trim() ? description.trim() : null)) as string | null,
+      status: draft.status || status,
+      form_schema: Array.isArray(schema) ? schema : [JSON.stringify(schema)],
+    }
+  }
+
   const handleSaveSchema = async (schema: any) => {
     try {
       setSchema(schema)
-      const payload: RequestFormSchema = {
-        form_category_id: Number(draft.form_category_id ?? categoryId),
-        name: draft.name || name.trim(),
-        description: (draft.description ?? (description.trim() ? description.trim() : null)) as string | null,
-        status: draft.status || status,
-        // the backend expects string[]; the builder schema may be an object; stringify if needed
-        form_schema: Array.isArray(schema) ? schema : [JSON.stringify(schema)],
+      const payload = buildPayload(schema)
+
+      if (mode === 'edit' && formToEdit) {
+        await updateFormConfigurations(Number(formToEdit.id), payload)
+      } else {
+        await postFormConfigurations(payload)
       }
-      await postFormConfigurations(payload)
+
       reset()
       endFlow()
     } catch (e) {
-      // For now, just log error; could add UI error message
       console.error('Failed to save form configuration', e)
     } finally {
       await queryClient.invalidateQueries({queryKey: [GET_FORMS_CONFIGURATION_ALL]});
     }
   }
+
+  const titleMeta = mode === 'edit' ? 'Edit Form Details' : 'New Form Details'
+  const titleBuilder = mode === 'edit' ? 'Edit Document Template' : 'Create Document Template'
 
   return (
     <>
@@ -167,7 +211,7 @@ export function FormTemplateCreator({open, onOpenChange}: FormTemplateCreatorPro
           <DialogTrigger asChild>
             <Button onClick={() => handleFlowOpenChange(true)}>
               <Plus className="mr-2 h-4 w-4"/>
-              Create Template
+              {mode === 'edit' ? 'Edit Template' : 'Create Template'}
             </Button>
           </DialogTrigger>
         )}
@@ -177,9 +221,9 @@ export function FormTemplateCreator({open, onOpenChange}: FormTemplateCreatorPro
       <Dialog open={metaOpen} onOpenChange={(v) => (v ? startFlow() : handleCancel())}>
         <DialogContent className="w-full max-w-2xl gap-2 flex flex-col items-start">
           <DialogHeader className="p-0">
-            <DialogTitle>New Form Details</DialogTitle>
+            <DialogTitle>{titleMeta}</DialogTitle>
             <DialogDescription>
-              Enter basic information before building the form
+              {mode === 'edit' ? 'Update the basic information of your form' : 'Enter basic information before building the form'}
             </DialogDescription>
           </DialogHeader>
 
@@ -239,9 +283,9 @@ export function FormTemplateCreator({open, onOpenChange}: FormTemplateCreatorPro
       <Dialog open={builderOpen} onOpenChange={(v) => (v ? setBuilderOpen(true) : handleCancel())}>
         <DialogContent className="w-full h-full max-w-full p-0 border-none sm:rounded-none gap-2 flex flex-col items-start">
           <DialogHeader className="p-4">
-            <DialogTitle>Create Document Template</DialogTitle>
+            <DialogTitle>{titleBuilder}</DialogTitle>
             <DialogDescription>
-              Build a custom template for documents and forms
+              {mode === 'edit' ? 'Modify the template structure' : 'Build a custom template for documents and forms'}
             </DialogDescription>
           </DialogHeader>
 
@@ -250,10 +294,22 @@ export function FormTemplateCreator({open, onOpenChange}: FormTemplateCreatorPro
               setVisibleDialog={(visible) => (visible ? setBuilderOpen(true) : handleCancel())}
               onSave={handleSaveSchema}
               onCancel={handleCancel}
+              initialForm={initialFormSchema}
             />
           </div>
         </DialogContent>
       </Dialog>
     </>
   )
+}
+
+function safeParseSchema(raw: string | any): any {
+  if (!raw) return { components: [] }
+  if (typeof raw !== 'string') return raw
+  try {
+    const parsed = JSON.parse(raw)
+    return parsed ?? { components: [] }
+  } catch {
+    return { components: [] }
+  }
 }
