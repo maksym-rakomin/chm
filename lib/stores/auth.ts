@@ -15,14 +15,8 @@ export const useAuthStore = create<AuthState>((set) => ({
   isLoaded: false,
   setRole: (role) => set({ role }),
   hydrateFromServer: async () => {
-    try {
-      const res = await fetch("/api/me/role", { cache: "no-store" });
-      if (!res.ok) throw new Error("failed");
-      const data = (await res.json()) as { role: UserRole };
-      set({ role: data.role, isLoaded: true });
-    } catch {
-      set({ role: "guest", isLoaded: true });
-    }
+    // Static export: there is no API available at runtime. Default to "guest".
+    set({ role: "guest", isLoaded: true });
   },
 }));
 
