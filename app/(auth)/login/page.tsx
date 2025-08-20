@@ -73,7 +73,7 @@ export default function LoginPage() {
       //   console.log(error.message)
       // }
 
-      router.push("/")
+      router.push("/settings")
       router.refresh()
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Login failed";

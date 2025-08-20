@@ -26,35 +26,35 @@ export type NavigationGroup = {
 };
 
 export const navigationGroups: NavigationGroup[] = [
-  {
-    title: "Overview",
-    items: [
-      { title: "Dashboard", url: "/", icon: "home", roles: ["admin", "manager", "user"] },
-    ],
-  },
-  {
-    title: "Management",
-    items: [
-      { title: "Patients", url: "/patients", icon: "users", roles: ["admin", "manager", "user"] },
-      { title: "Staff", url: "/staff", icon: "userCheck", roles: ["admin", "manager"] },
-      { title: "Schedule", url: "/schedule", icon: "calendar", roles: ["admin", "manager", "user"] },
-    ],
-  },
-  {
-    title: "Operations",
-    items: [
-      { title: "Documents", url: "/documents", icon: "fileText", roles: ["admin", "manager"] },
-      { title: "Status Tracker", url: "/status", icon: "clipboardList", roles: ["admin", "manager", "user"] },
-      { title: "Reports", url: "/reports", icon: "trendingUp", roles: ["admin", "manager"] },
-    ],
-  },
-  {
-    title: "Communication",
-    items: [
-      { title: "Messages", url: "/messages", icon: "messageSquare", roles: ["admin", "manager", "user"] },
-      { title: "Notifications", url: "/notifications", icon: "bell", roles: ["admin", "manager", "user"] },
-    ],
-  },
+  // {
+  //   title: "Overview",
+  //   items: [
+  //     { title: "Dashboard", url: "/", icon: "home", roles: ["admin", "manager", "user"] },
+  //   ],
+  // },
+  // {
+  //   title: "Management",
+  //   items: [
+  //     { title: "Patients", url: "/patients", icon: "users", roles: ["admin", "manager", "user"] },
+  //     { title: "Staff", url: "/staff", icon: "userCheck", roles: ["admin", "manager"] },
+  //     { title: "Schedule", url: "/schedule", icon: "calendar", roles: ["admin", "manager", "user"] },
+  //   ],
+  // },
+  // {
+  //   title: "Operations",
+  //   items: [
+  //     { title: "Documents", url: "/documents", icon: "fileText", roles: ["admin", "manager"] },
+  //     { title: "Status Tracker", url: "/status", icon: "clipboardList", roles: ["admin", "manager", "user"] },
+  //     { title: "Reports", url: "/reports", icon: "trendingUp", roles: ["admin", "manager"] },
+  //   ],
+  // },
+  // {
+  //   title: "Communication",
+  //   items: [
+  //     { title: "Messages", url: "/messages", icon: "messageSquare", roles: ["admin", "manager", "user"] },
+  //     { title: "Notifications", url: "/notifications", icon: "bell", roles: ["admin", "manager", "user"] },
+  //   ],
+  // },
 ];
 
 // Publicly accessible routes (no auth required)
